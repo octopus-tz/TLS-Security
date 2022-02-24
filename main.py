@@ -1,8 +1,7 @@
 import dns.resolver
-import os
 import subprocess
+from esnicheck.check import ESNICheck
 
-# Using readlines()
 with open("/home/zisis/Downloads/tranco_K52W.csv") as file:
     for item in file:
         #item = "12,crypto.cloudflare.com"
@@ -13,6 +12,6 @@ with open("/home/zisis/Downloads/tranco_K52W.csv") as file:
         print("------------")
         proc = subprocess.Popen([cmd, "/etc/services"], stdout=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
-        print("program output:", out)
+        print("Output:", out)
         print("------------")
         
