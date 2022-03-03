@@ -14,9 +14,9 @@ do
    echo "SEcod part : ${array[1]}"
    echo "-----------------"
    url='https://www.'${array[1]}
-   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url'; then #2>&1 | grep "handshake, Finished"; then
-      echo "Successful handshake!!"
-   else 
-      echo "Failure in handshake!!"
+   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url' 2>&1 | grep 'Configured encrypted server name (ESNI)|handshake, Finished'; then
+      echo "Success Handshake with ESNI!!"
+   else
+      echo "Failure in Handshake!!"
    fi
 done < $filename
