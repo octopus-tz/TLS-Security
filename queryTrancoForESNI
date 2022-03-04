@@ -9,14 +9,15 @@ do
    echo "Line No. $n : $line"
    #IFS=', ' read -r -a array << "$line"
    IFS=',' read -ra array <<< "$line"
-   echo "-----------------"
-   echo "FIrst part : ${array[0]}"
+   echo "########################"
+   #echo "FIrst part : ${array[0]}"
+   echo "------------------------"   
    echo "SEcod part : ${array[1]}"
-   echo "-----------------"
+   echo "------------------------"
    url='https://www.'${array[1]}
-   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url' 2>&1 | grep 'Configured encrypted server name (ESNI)|handshake, Finished'; then
-      echo "Success Handshake with ESNI!!"
+   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url' 2>&1 | grep -E 'unable to configure encrypted server name indication (ESNI)|Configured encrypted server name (ESNI)|handshake, Finished|failed to decode STRING_ESNI_ASCIIRR'; then
+       echo "One of the known"
    else
-      echo "Failure in Handshake!!"
+      echo "Unknown needs examination!!"
    fi
 done < $filename
