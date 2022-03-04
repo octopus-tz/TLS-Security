@@ -15,7 +15,8 @@ do
    echo "SEcod part : ${array[1]}"
    echo "------------------------"
    url='https://www.'${array[1]}
-   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url' 2>&1 | grep -E 'unable to configure encrypted server name indication (ESNI)|Configured encrypted server name (ESNI)|handshake, Finished|failed to decode STRING_ESNI_ASCIIRR'; then
+   echo "URL pinged: https://www.${array[1]}"
+   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url' 2>&1 | grep -E 'unable to configure encrypted|Configured encrypted|handshake, Finished|failed to decode STRING_ESNI_ASCIIRR'; then
        echo "One of the known"
    else
       echo "Unknown needs examination!!"
