@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
-filename='/home/zisis/Downloads/tranco_YJLG.csv'
-#filename='/home/zisis/Desktop/Programming/domains'
+filename='/home/user/zisis/data/full'
+
 n=1
+variable_doh=0
+variable_esni=0
+variable handshake=0
+
 while read line; 
 do
    # reading each line
@@ -10,15 +14,44 @@ do
    #IFS=', ' read -r -a array << "$line"
    IFS=',' read -ra array <<< "$line"
    echo "########################"
-   #echo "FIrst part : ${array[0]}"
    echo "------------------------"   
    echo "SEcod part : ${array[1]}"
    echo "------------------------"
    url='https://www.'${array[1]}
    echo "URL pinged: https://www.${array[1]}"
-   if eval /home/zisis/Desktop/Programming/curl/curl-esni '$url' 2>&1 | grep -E 'unable to configure encrypted|Configured encrypted|handshake, Finished|failed to decode STRING_ESNI_ASCIIRR'; then
-       echo "One of the known"
+   
+   variable=$((eval /home/user/zisis/ESNI/curl/curl-esni '$url') 2>&1)
+  
+   if echo "$variable" | grep -E 'a DOH request is completed'; then
+      variable_doh=1
+      echo "DOH Ok"
    else
-      echo "Unknown needs examination!!"
+      variable_doh=0
+      echo "DOH Problem"
    fi
+   if echo "$variable" | grep -E 'unable to configure encrypted|failed to decode STRING_ESNI_ASCIIRR'; then
+      variable_esni=0
+      echo "ESNI problem"
+   elif echo "$variable" | grep -E 'Configured encrypted'; then
+      variable_esni=1
+      echo "ESNI Ok"
+   fi
+   if echo "$variable" | grep -E 'handshake, Finished'; then
+      variable_handshake=1
+      echo "Handshake Ok"
+   else
+      variable_handshake=0
+      echo "Handshake Problem" 
+   fi
+
+   echo "Print results"
+   echo $url","$variable_doh","$variable_esni","$variable_handshake >> results.txt
+  
+
+   #if eval /home/user/zisis/ESNI/curl/curl-esni '$url' 2>&1 | grep -E 'unable to configure encrypted|Configured encrypted|handshake, Finished|failed to decode STRING_ESNI_ASCIIRR|a DOH request is completed'; then
+   #   echo "Successful handshake"
+   #else
+   #   echo "Unknown needs examination!!"
+   #fi
+
 done < $filename
