@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+filename='/home/user/zisis/data/dataFull/originalData/test'
+
+n=1
+
+#variable_esni_doh=0
+#variable_curl_doh=0
+#variable_esni_configured=0
+#variable_handshake=0
+
+export LD_LIBRARY_PATH='/home/user/zisis/ESNI/openssl'
+
+while read line; 
+do
+   # reading each line
+   echo "Line No. $n : $line"
+   #IFS=', ' read -r -a array << "$line"
+   IFS=',' read -ra array <<< "$line"
+   echo "########################"
+   echo "------------------------"   
+   echo "SEcod part : ${array[1]}"
+   echo "------------------------"
+   url='https://www.'${array[1]}
+   echo "URL pinged: https://www.${array[1]}"
+   variable_esni_doh=0
+   variable_esni_doh=0
+   variable_curl_doh=0
+   variable_esni_configured=0
+   variable_curl_handshake=0
+   variable_esni_key_doh=0
+   
+   var=$((kdig -d @1.1.1.1 +tls-ca -t TXT _esni.${array[1]}) 2>&1)
+   key1=${var#*\"}
+   key2=${key1%% *}
+   subKey=${key2%\"*}
+   echo "$subKey"
+   size=${#subKey}
+   echo "size of key: $size"
+
+   if echo "$var"  | grep -E 'TLS session|status: NOERROR'; then
+      variable_esni_doh=1
+      if (("$size" > 50)); then
+          variable_esni_key_doh=1
+          echo "ESNI key over DOH is fine!"
+      else
+          variable_esni_key_doh=0
+          echo "ESNI key does not exist"
+      fi
+   else
+      variable_esni_doh=0
+   fi
+
+  
+   ### Actual curl command that will be executed /// --esni-server '$url'
+   variable=$((eval /home/user/zisis/ESNI/curl/src/curl '$url'  --doh-url 'https://1.1.1.1/dns-query' --verbose --esni-server '$url' \
+   --esni-load '$subKey' --no-strict-esni) 2>&1)
+
+   #echo "... $variable"
+
+   if echo "$variable" | grep -E 'a DOH request is completed'; then
+      variable_curl_doh=1
+      echo "Curl DOH Ok"
+   else
+      variable_curl_doh=0
+      echo "Curl DOH Problem"
+   fi
+   if echo "$variable" | grep -E 'unable to configure encrypted|failed to decode STRING_ESNI_ASCIIRR'; then
+      variable_esni_configured=0
+      echo "ESNI problem"
+   elif echo "$variable" | grep -E 'Configured encrypted'; then
+      variable_esni_configured=1
+      echo "ESNI Ok"
+   fi
+   if echo "$variable" | grep -E 'handshake, Finished'; then
+      variable_curl_handshake=1
+      echo "Handshake Ok"
+   else
+      variable_curl_handshake=0
+      echo "Handshake Problem" 
+   fi
+
+   echo "Print results"
+   echo ${array[0]}","$url","$variable_esni_doh","$variable_esni_key_doh","$variable_curl_doh","$variable_esni_configured","$variable_curl_handshake >> results-xaa.txt
+
+   #if eval /home/user/zisis/ESNI/curl/curl-esni '$url' 2>&1 | grep -E 'unable to configure encrypted|Configured encrypted|handshake, Finished|failed to decode STRING_ESNI_ASCIIRR|a DOH request is completed'; then
+   #   echo "Successful handshake"
+   #else
+   #   echo "Unknown needs examination!!"
+   #fi
+
+done < $filename
